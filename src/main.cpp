@@ -2,7 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 
-#include <debug.h>
+#include <Debug.h>
 #include <Sound.h>
 #include <Button.h>
 #include <Menu.h>
@@ -85,10 +85,10 @@ int main(){
 			if (event.type == sf::Event::Closed){
 				window.close();
 
+			// keyboard input
 			} else if (event.type == sf::Event::KeyPressed){
 
 				if (event.key.code == sf::Keyboard::K){
-					//stopRunning = true;
 					kick.play();
 					c.setFillColor(cmap[0]);
 					(new sf::Thread(&circleQuickExpand, &c))->launch();
@@ -104,6 +104,13 @@ int main(){
 
 				} else if (event.key.code == sf::Keyboard::Escape){
 					window.close();
+				}
+				
+			// mouse input
+			} else if (event.type == sf::Event::MouseButtonPressed){
+
+				if (event.mouseButton.button == sf::Mouse::Button::Left){
+					menu.checkPress(event.mouseButton.x, event.mouseButton.y);
 				}
 			}
 

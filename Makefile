@@ -1,46 +1,59 @@
-all: dev
+########################
+#
+# SFML-ready Makefile
+# Author: Jacob Nardone
+# Date: 12/24/2020
+#
+########################
 
-.PHONY: all
+CXX 		?= g++
+TARGET 		?= final
 
-exe = GetCrunked
+BUILD_DIR 	?= bin
+OBJ_DIR 	?= objs
+SRC_DIR 	?= src
 
-bin:
-	@echo "building directory $@"
-	mkdir -p $@
+SRCS := $(notdir $(wildcard $(SRC_DIR)/*.cpp))
+#$(info $$SRCS is [${SRCS}]) # print out sources
+OBJS := $(SRCS:%=$(OBJ_DIR)/%.o)
+
+INCLUDES 	= -IC:/dev/libraries/SFML/include -Iinclude
+DEV-DEPS 	= -LC:/dev/libraries/SFML/lib -lsfml-window -lsfml-graphics -lsfml-audio -lsfml-system
+RLS-DEPS 	= -LC:/dev/libraries/SFML/lib -lsfml-window -lsfml-graphics -lsfml-audio -lsfml-system -mwindows -O2
+	# mwindows: tells exe not to open seperate console window when running exe
+	# O2: optimization level 2 (longer compile time)
+
+MKDIR_P ?= mkdir -p
+
+.PHONY: default
+default: $(BUILD_DIR)/$(TARGET)	# set default goal
+
+$(BUILD_DIR):
+	$(MKDIR_P) $@
+
+$(OBJ_DIR):
+	$(MKDIR_P) $@
 
 
-bin/main.o: src/main.cpp | bin
-	@echo building $@
-	g++ -o $@ -c $^ -IC:\dev\libraries\SFML\include -Iinclude
+# link the executable
+$(BUILD_DIR)/$(TARGET): $(OBJS) | $(OBJ_DIR) $(BUILD_DIR) # default goal
+	$(CXX) $(OBJS) -o $@ $(DEV-DEPS)
+
+# create the object files
+$(OBJ_DIR)/%.cpp.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR) $(BUILD_DIR)
+	$(CXX) -c $< -o $@ $(INCLUDES)
 
 
-dev: bin/main.o | bin
-	@echo building dev
-	g++ -o bin/${exe} $^ -LC:\dev\libraries\SFML\lib -lsfml-window -lsfml-graphics -lsfml-audio -lsfml-system -lopenal32 -lflac -lvorbisenc -lvorbisfile -lvorbis -logg -lfreetype -lopengl32 -lwinmm -lgdi32
-
-
-release: bin/main.o | bin
-	@echo building release
-	g++ -o bin/${exe} $^ res/my.res -LC:\dev\libraries\SFML\lib -lsfml-window -lsfml-graphics -lsfml-audio -lsfml-system -lopenal32 -lflac -lvorbisenc -lvorbisfile -lvorbis -logg -lfreetype -lopengl32 -lwinmm -lgdi32 -mwindows -O2
-
-
-portable: release
-	@echo creating portable
-	@cp -r bin/ portable/
-	@cp -r res/ portable/res/
+.PHONY: clean
+clean:
+	rm -f $(BUILD_DIR)/*.exe
+	rm -rf $(OBJ_DIR)
 
 
 run:
 	@printf "\n\n"
 	@echo "Running:"
 	@echo "=================================="
-	@bin/${exe}
+	@$(BUILD_DIR)/$(TARGET)
 	@echo "=================================="
 	@printf "\n\n"
-
-
-
-clean:
-	@echo cleaning...
-	rm -f bin/*.o
-	rm -f bin/*.exe

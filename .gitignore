@@ -1,4 +1,6 @@
 *.swp
 *~
 *.stackdump
+objs/
 portable/ 
+res/my.rc

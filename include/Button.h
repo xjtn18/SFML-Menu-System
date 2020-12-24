@@ -1,6 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
-#include <debug.h>
+#include <Debug.h>
 
 
 class Button : public sf::Drawable {
@@ -19,6 +19,8 @@ public:
 		box.setFillColor(sf::Color::Black);
 		box.setOutlineThickness(1);
 		box.setOutlineColor(sf::Color::Black);
+
+		// center rectangles pivot
 		box.setOrigin(w/2, h/2);
 
 		font.loadFromFile("res/sansation.ttf");
@@ -31,7 +33,7 @@ public:
 
 
 	void setXY(int _x, int _y) {
-		zone = sf::Rect<int>(_x,_y,w,h);
+		zone = sf::Rect<int>(_x-w/2,_y-h/2,w,h);
 		box.setPosition(_x, _y);
 		bText.setPosition(_x,_y);
 	};
@@ -61,8 +63,12 @@ public:
 		target.draw(box, states); // draw the button box
 		target.draw(bText, states); // draw the button text
 	}
+
+	void checkPress(int mouseX, int mouseY){
+		if (zone.contains(mouseX, mouseY)){
+			log(bText.getString().toAnsiString() + " pressed!");
+		}
+	}
 };
 
-
-sf::Font Button::font; // declare static var
 
