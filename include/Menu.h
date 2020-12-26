@@ -18,6 +18,8 @@ class Menu : public sf::Drawable {
 
 public:
 
+	Menu(){}
+
 	Menu(int padding, int _x, int _y, std::initializer_list<Button> l) : buttons(l) {
 
 		int bY = _y; // button y placement
@@ -32,7 +34,7 @@ public:
 
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const {
 		for (Button button : buttons){ // draw each button
-			target.draw(button, states);
+			target.draw(button);
 		}
 	}
 
@@ -45,6 +47,12 @@ public:
 	void checkPress(int mouseX, int mouseY){
 		for (Button& button : buttons){
 			button.checkPress(mouseX, mouseY);
+		}
+	}
+
+	void checkHover(int mouseX, int mouseY){
+		for (Button& button : buttons){
+			button.checkHover(mouseX, mouseY);
 		}
 	}
 
