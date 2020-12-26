@@ -2,4 +2,5 @@
 *~
 *.stackdump
 objs/
-portable/ 
+portable/
+*.asd
