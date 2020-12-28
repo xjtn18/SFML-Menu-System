@@ -4,3 +4,4 @@
 objs/
 portable/
 *.asd
+tlc.py
