@@ -1,10 +1,14 @@
 #include <Application.h>
 
 bool Application::running = true;
+
 WindowWrapper Application::windowWrapper = WindowWrapper(1000, 1000); // create the window
-//Menu Application::mainMenu, Application::optionsMenu;
 Menu* Application::currentMenu = &mainMenu;
 
+
+//
+// Menus
+//
 Menu Application::mainMenu = Menu(20, Application::windowWrapper.getWindowWidth()/2, Application::windowWrapper.getWindowHeight()/2, {
 	Button(300, 50, "start", [](){
 			log("start pressed");
@@ -39,13 +43,8 @@ Menu Application::optionsMenu = Menu(20, Application::windowWrapper.getWindowWid
 });
 
 
-void centerCircle(sf::CircleShape& s, sf::Window* win){
-	sf::Vector2<unsigned int> winsize = win->getSize();
-	float rad = s.getRadius();
-	float centerX = winsize.x/2;
-	float centerY = winsize.y/2;
-	s.setPosition(centerX, centerY);
-}
+
+
 
 bool stopRunning;
 
@@ -74,35 +73,52 @@ void circleQuickExpand(void* _c){
 }
 
 
+
+
+//
+// Change what menu is displayed
+// 
 void Application::changeMenu(Menu* newMenu){
 	Application::currentMenu = newMenu;
 }
 
 
+//
+// Stop the program
+// 
 void Application::stop(){
 	sf::sleep(sf::milliseconds(200));
 	Application::windowWrapper.getWindow()->close();
 }
 
 
+
+//
+// Main program loop
+// 
 void Application::eventLoop(){
 
 	sf::RenderWindow* window = Application::windowWrapper.getWindow();
 	int winw = Application::windowWrapper.getWindowWidth();
 	int winh = Application::windowWrapper.getWindowHeight();
+	//sf::Vector2<unsigned int> winsize = window->getSize();
 
 	// sounds
 	aud::Sound snare("res/snare.wav");
 	aud::Sound kick("res/kick.wav");
 	aud::Sound hat("res/hat.wav");
 
+	//images
+	img::Image bg("res/forest.jpg");
+	bg.setXY(0, winh - bg.getHeight());
+
 	// menu circle
 	std::map<int, sf::Color> cmap {{0, sf::Color::Magenta}, {1, sf::Color::Cyan}, {2, sf::Color::Yellow}};
 	int rad = 300;
 	sf::CircleShape c = sf::CircleShape(rad, 100);
-	centerCircle(c, window);
 	c.setOrigin(rad, rad); // set transformation origin point to the circle's center
 	c.setFillColor(cmap[0]);
+	c.setPosition(winw/2, winh/2);
 
 
 	Application::mainMenu.setButtonColor(sf::Color(194, 221, 95, 255)); // light green
@@ -147,12 +163,13 @@ void Application::eventLoop(){
 				}
 			}
 
-			sf::Vector2i mousePos = sf::Mouse::getPosition(*window);
-			if (window->hasFocus()){ // only run these if the window is in focus
+			if (window->hasFocus()){
+				sf::Vector2i mousePos = sf::Mouse::getPosition(*window);
 				Application::currentMenu->checkHover(mousePos.x, mousePos.y);
 			}
 
-			window->clear(sf::Color(30,30,30,255)); // clear and set bg color
+			window->clear(sf::Color(228,240,238,255)); // clear and set bg color
+			window->draw(bg);
 			window->draw(c);
 			window->draw(*(Application::currentMenu));
 			window->display();
@@ -161,7 +178,9 @@ void Application::eventLoop(){
 }
 
 
-
+//
+// Start the program
+//
 void Application::init(){
 	Application::eventLoop();
 }

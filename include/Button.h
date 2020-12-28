@@ -3,6 +3,7 @@
 #include <functional>
 #include <Debug.h>
 #include <Sound.h>
+#include <cmath>
 
 
 class Button : public sf::Drawable {
@@ -77,23 +78,33 @@ public:
 			isHovered = true;
 			Button::hoverSound.play();
 			box.setFillColor(hoverColor);
-			this->grow();
+			(new sf::Thread(&grow, this))->launch();
 
 		} else if (isHovered == true && !zone.contains(mouseX, mouseY)){
 			isHovered = false;
 			box.setFillColor(idleColor);
-			this->shrink();
+			(new sf::Thread(&shrink, this))->launch();
 		}
 	}
 
-	void grow(){
-		box.setSize(box.getSize() + sf::Vector2f(20,0));
-		box.setPosition(box.getPosition() - sf::Vector2f(10,0));
+	static void grow(void* _button){
+		Button* button = static_cast<Button*>(_button);
+
+		for (int i = 0; i < 10; ++i){
+			button->box.setSize(button->box.getSize() + sf::Vector2f(i,0));
+			button->box.setPosition(button->box.getPosition() - sf::Vector2f(i/2,0));
+			sf::sleep(sf::milliseconds(3));
+		}
 	}
 
-	void shrink(){
-		box.setSize(box.getSize() - sf::Vector2f(20,0));
-		box.setPosition(box.getPosition() + sf::Vector2f(10,0));
+	static void shrink(void* _button){
+		Button* button = static_cast<Button*>(_button);
+
+		for (int i = 0; i < 10; ++i){
+			button->box.setSize(button->box.getSize() - sf::Vector2f(i,0));
+			button->box.setPosition(button->box.getPosition() + sf::Vector2f(i/2,0));
+			sf::sleep(sf::milliseconds(3));
+		}
 	}
 
 };

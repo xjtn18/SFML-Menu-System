@@ -7,13 +7,14 @@
 #include <Sound.h>
 #include <Button.h>
 #include <Menu.h>
+#include <Image.h>
 
 class Application {
 
 public:
 	// main window
-	static WindowWrapper windowWrapper;
 	static bool running;
+	static WindowWrapper windowWrapper;
 	static Menu mainMenu, optionsMenu;
 	static Menu* currentMenu;
 

@@ -44,6 +44,7 @@ release: $(OBJS) | $(OBJ_DIR) $(BUILD_DIR)
 .PHONY: portable
 portable: release
 	@echo creating portable
+	@rm -rf portable
 	@cp -r $(BUILD_DIR)/ portable/
 	@cp -r $(RES_DIR)/ portable/$(RES_DIR)/
 
