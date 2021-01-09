@@ -11,7 +11,7 @@ public:
 	WindowWrapper(int _width, int _height) : width(_width), height(_height){
 		sf::ContextSettings settings;
 		settings.antialiasingLevel = 16;
-		window = new sf::RenderWindow(sf::VideoMode(_width, _height), "Game-SFML", sf::Style::Default, settings);
+		window = new sf::RenderWindow(sf::VideoMode(_width, _height), "Game-SFML", sf::Style::Titlebar | sf::Style::Close, settings);
 	}
 
 	~WindowWrapper(){

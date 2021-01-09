@@ -32,11 +32,13 @@ public:
 		}
 	}
 
+
 	void draw(sf::RenderTarget& target, sf::RenderStates states) const {
-		for (Button button : buttons){ // draw each button
+		for (const Button& button : buttons){ // draw each button
 			target.draw(button);
 		}
 	}
+
 
 	void setButtonColor(sf::Color c){
 		for (Button& button : buttons){
@@ -44,17 +46,20 @@ public:
 		}
 	}
 
+
 	void checkPress(int mouseX, int mouseY){
 		for (Button& button : buttons){
 			button.checkPress(mouseX, mouseY);
 		}
 	}
 
+
 	void checkHover(int mouseX, int mouseY){
 		for (Button& button : buttons){
 			button.checkHover(mouseX, mouseY);
 		}
 	}
+
 
 };
 

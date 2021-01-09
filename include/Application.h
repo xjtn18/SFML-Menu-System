@@ -8,6 +8,11 @@
 #include <Button.h>
 #include <Menu.h>
 #include <Image.h>
+#include <cmath>
+
+
+#define PI 3.14159265
+
 
 class Application {
 

@@ -1,5 +1,6 @@
 #include <Application.h>
 
+
 bool Application::running = true;
 
 WindowWrapper Application::windowWrapper = WindowWrapper(1000, 1000); // create the window
@@ -9,69 +10,38 @@ Menu* Application::currentMenu = &mainMenu;
 //
 // Menus
 //
-Menu Application::mainMenu = Menu(20, Application::windowWrapper.getWindowWidth()/2, Application::windowWrapper.getWindowHeight()/2, {
-	Button(300, 50, "start", [](){
+Menu Application::mainMenu = Menu(1, Application::windowWrapper.getWindowWidth()/2, Application::windowWrapper.getWindowHeight()/2, {
+	Button(300, 60, "start", [](){
 			log("start pressed");
 	}),
 
-	Button(300, 50, "options", [](){
+	Button(300, 60, "options", [](){
 			Application::changeMenu(&(Application::optionsMenu));
 	}),
 
-	Button(300, 50, "exit", [](){
+	Button(300, 60, "exit", [](){
 			Application::stop();
 	})
 });
 
 
-Menu Application::optionsMenu = Menu(20, Application::windowWrapper.getWindowWidth()/2, Application::windowWrapper.getWindowHeight()/2, {
-	Button(300, 50, "option 1", [](){
+Menu Application::optionsMenu = Menu(1, Application::windowWrapper.getWindowWidth()/2, Application::windowWrapper.getWindowHeight()/2, {
+	Button(300, 60, "option 1", [](){
 			log("option 1");
 	}),
 
-	Button(300, 50, "option 2", [](){
+	Button(300, 60, "option 2", [](){
 			log("option 2");
 	}),
 
-	Button(300, 50, "option 3", [](){
+	Button(300, 60, "option 3", [](){
 			log("option 3");
 	}),
 
-	Button(300, 50, "<", [](){
+	Button(300, 60, "<", [](){
 			Application::changeMenu(&(Application::mainMenu));
 	})
 });
-
-
-
-
-
-bool stopRunning;
-
-void circleQuickExpand(void* _c){
-	//
-	// param: CircleShape
-	//
-	stopRunning = false;
-	sf::CircleShape* c = static_cast<sf::CircleShape*>(_c);
-	float newScale = 1.0;
-	
-	//grow
-	for (int i = 1; i < 30 && stopRunning == false; ++i){
-		newScale = newScale + .001;
-		c->setScale(sf::Vector2f(newScale, newScale));
-		sf::sleep(sf::milliseconds(1));
-	}
-
-	//shrink
-	for (int i = 1; i < 30 && stopRunning == false; ++i){
-		newScale = newScale - .001;
-		c->setScale(sf::Vector2f(newScale, newScale));
-		sf::sleep(sf::milliseconds(1));
-	}
-	c->setScale(sf::Vector2f(1, 1)); // reset scale if stopRunning turned true before animation ended
-}
-
 
 
 
@@ -101,32 +71,42 @@ void Application::eventLoop(){
 	sf::RenderWindow* window = Application::windowWrapper.getWindow();
 	int winw = Application::windowWrapper.getWindowWidth();
 	int winh = Application::windowWrapper.getWindowHeight();
-	//sf::Vector2<unsigned int> winsize = window->getSize();
+	window->setFramerateLimit(120);
+	window->setVerticalSyncEnabled(true);
+
+	sf::View view;
+
 
 	// sounds
-	aud::Sound snare("res/snare.wav");
-	aud::Sound kick("res/kick.wav");
-	aud::Sound hat("res/hat.wav");
+	aud::Sound snare("res/snare.wav", 20);
+	aud::Sound kick("res/kick.wav", 20);
+	aud::Sound hat("res/hat.wav", 20);
+	aud::Sound music_MainMenu("res/music_MainMenu.wav", 20, true);
+	music_MainMenu.play();
 
 	//images
-	img::Image bg("res/forest.jpg");
-	bg.setXY(0, winh - bg.getHeight());
+	img::Image bg("res/forest2.jpg");
+	bg.setXY(-150, winh - bg.getHeight() + 45);
+	img::Image title("res/title.png");
+	title.setXY(winw/2 - title.getWidth()/2, winh/2 - title.getHeight()/2 - 150);
+	
 
 	// menu circle
-	std::map<int, sf::Color> cmap {{0, sf::Color::Magenta}, {1, sf::Color::Cyan}, {2, sf::Color::Yellow}};
 	int rad = 300;
-	sf::CircleShape c = sf::CircleShape(rad, 100);
+	sf::CircleShape c(rad, 100);
 	c.setOrigin(rad, rad); // set transformation origin point to the circle's center
-	c.setFillColor(cmap[0]);
+	c.setFillColor(sf::Color(253, 218, 73, 255));
 	c.setPosition(winw/2, winh/2);
 
+	double rotateCountBg = 0;
+	double xWaverCountBg = 0;
+	double yWaverCountBg = 0;
 
-	Application::mainMenu.setButtonColor(sf::Color(194, 221, 95, 255)); // light green
-	Application::optionsMenu.setButtonColor(sf::Color(194, 221, 95, 255)); // light green
 
-
+	sf::Clock clock;
 	// run the program as long as the window is open
 	while (window->isOpen()) {
+
 		// check all the windows events that were triggered since the last iteration of the loop
 		sf::Event event;
 		while (window->pollEvent(event)) {
@@ -137,21 +117,7 @@ void Application::eventLoop(){
 			// keyboard input
 			} else if (event.type == sf::Event::KeyPressed){
 
-				if (event.key.code == sf::Keyboard::K){
-					kick.play();
-					c.setFillColor(cmap[0]);
-					(new sf::Thread(&circleQuickExpand, &c))->launch();
-
-				} else if (event.key.code == sf::Keyboard::S){
-					snare.play();
-					c.setFillColor(cmap[1]);
-					(new sf::Thread(&circleQuickExpand, &c))->launch();
-
-				} else if (event.key.code == sf::Keyboard::H){
-					hat.play();
-					c.setFillColor(cmap[2]);
-
-				} else if (event.key.code == sf::Keyboard::Escape){
+				if (event.key.code == sf::Keyboard::Escape){
 					Application::stop();
 				}
 				
@@ -168,11 +134,30 @@ void Application::eventLoop(){
 				Application::currentMenu->checkHover(mousePos.x, mousePos.y);
 			}
 
+
+			float dt = clock.restart().asSeconds();
+
 			window->clear(sf::Color(228,240,238,255)); // clear and set bg color
+
+			// waver camera
+			view.rotate(cos(rotateCountBg) / 1.1 * dt);
+			view.move(10 * cos(xWaverCountBg) * dt, 10 * cos(yWaverCountBg) * dt);
+
+			// items affected by waver
+			window->setView(view);
 			window->draw(bg);
+
+			// reset to standard view
+			window->setView(window->getDefaultView());
+
 			window->draw(c);
+			window->draw(title);
 			window->draw(*(Application::currentMenu));
 			window->display();
+
+			rotateCountBg += 0.005;
+			xWaverCountBg += 0.004;
+			yWaverCountBg += 0.007;
 		}
 	}
 }
