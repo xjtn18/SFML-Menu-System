@@ -1,77 +1,65 @@
-########################
-#
-# SFML-ready Makefile
+##########################################################################
 # Author: Jacob Nardone
-# Date: 12/24/2020
-#
-########################
+# File Type: GNU Makefile
+# Date Created: 4/9/2021
+# Description: Flexible C makefile for ranging project file structures.
+##########################################################################
 
-CXX 		?= g++
-TARGET 		?= final
+#----------------------------------------------------------------#
+# name of dir that stores source files
+SRCDIR	:= src
+# name of dir that stores header files
+INCDIR	:= include
+# name of dir that stores object files
+OBJDIR 	:= objs
+# name of final executable
+EXEC 		:= jBell
+# C compiler
+CC			:= g++
+# compilation flags
+CFLAGS	:= -std=c++17 -Wc++17-extensions -Wall -I$(INCDIR) -I/Users/Jacob/dev/libs/sfml/include
+# linking flags (libraries)
+SFML-LIBPATH	:= /Users/Jacob/dev/libs/sfml/lib 
+LFLAGS			:= -L$(SFML-LIBPATH) -rpath $(SFML-LIBPATH) -lsfml-audio -lsfml-window -lsfml-graphics -lsfml-audio -lsfml-system
+LFLAGS-RLS			:= -L$(SFML-LIBPATH) -rpath $(SFML-LIBPATH) -lsfml-audio -lsfml-window -lsfml-graphics -lsfml-audio -lsfml-system -mwindows -O2
+#----------------------------------------------------------------#
 
-BUILD_DIR 	?= build
-OBJ_DIR 	?= objs
-SRC_DIR 	?= src
-RES_DIR		?= res
-
-SRCS := $(notdir $(wildcard $(SRC_DIR)/*.cpp))
-#$(info $$SRCS is [${SRCS}]) # print out sources
-OBJS := $(SRCS:%=$(OBJ_DIR)/%.o)
-
-INCLUDES 	= -IC:/dev/libraries/SFML/include -Iinclude
-DEV_DEPS 	= -LC:/dev/libraries/SFML/lib -lsfml-window -lsfml-graphics -lsfml-audio -lsfml-system
-RLS_DEPS 	= -LC:/dev/libraries/SFML/lib -lsfml-window -lsfml-graphics -lsfml-audio -lsfml-system -mwindows -O2
-	# mwindows: tells exe not to open seperate console window when running exe
-	# O2: optimization level 2 (longer compile time)
-
-MKDIR_P ?= mkdir -p
-
-
-# link the dev target
-.PHONY: dev
-dev: $(OBJS) | $(OBJ_DIR) $(BUILD_DIR) # default goal
-	@echo linking dev
-	$(CXX) $(OBJS) -o $(BUILD_DIR)/$(TARGET) $(DEV_DEPS)
+OBJS 		:= $(patsubst $(SRCDIR)/%.cpp, $(OBJDIR)/%.o, $(wildcard $(SRCDIR)/*.cpp))
+HEADERS 	:= $(wildcard $(INCDIR)/*.hpp)
 
 
-# link the release target
-.PHONY: release
-release: $(OBJS) | $(OBJ_DIR) $(BUILD_DIR)
-	@echo linking release
-	$(CXX) $(OBJS) -o $(BUILD_DIR)/$(TARGET) $(RLS_DEPS)
+$(EXEC): $(OBJS)
+	@echo Linking dev build ...
+	@$(CC) $^ $(LFLAGS) -o $@
+	@echo Done.
+	@printf "\n"
 
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS) | $(OBJDIR)
+	@echo Compiling $< ...
+	@$(CC) $< -c $(CFLAGS) -o $@
 
-.PHONY: portable
-portable: release
-	@echo creating portable
-	@rm -rf portable
-	@cp -r $(BUILD_DIR)/ portable/
-	@cp -r $(RES_DIR)/ portable/$(RES_DIR)/
-
-
-# required directories
-$(BUILD_DIR):
-	$(MKDIR_P) $@
-
-$(OBJ_DIR):
-	$(MKDIR_P) $@
-
-
-# create the object files
-$(OBJ_DIR)/%.cpp.o: $(SRC_DIR)/%.cpp | $(OBJ_DIR) $(BUILD_DIR)
-	$(CXX) -c $< -o $@ $(INCLUDES)
-
-
-.PHONY: clean
-clean:
-	rm -f $(BUILD_DIR)/*.exe
-	rm -rf $(OBJ_DIR)
-
-# run the target
 run:
-	@printf "\n\n"
-	@echo "Running:"
-	@echo "=================================="
-	@$(BUILD_DIR)/$(TARGET)
-	@echo "=================================="
-	@printf "\n\n"
+	@ make run2 -j7
+
+run2: $(EXEC)
+	@ ./$(EXEC)
+
+release: $(OBJS)
+	@echo Linking release build ...
+	@$(CC) $^ $(LFLAGS-RLS) -o $(EXEC)
+	@echo Done.
+	@printf "\n"
+
+portable: release
+	@ mkdir -p $@
+	@ cp $(EXEC) $@
+	@ cp -R res $@
+
+clean:
+	@ rm -rf $(EXEC) $(OBJDIR)
+
+$(OBJDIR):
+	mkdir -p $@
+
+.PHONY: run clean portable release
+
